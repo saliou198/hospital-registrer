@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom'
 import type { Establishment } from '@/types'
 import { useLocalStorage } from '@/hooks/useLocalStorage'
 import { useTheme } from '@/hooks/useTheme'
@@ -6,9 +6,12 @@ import { Layout } from '@/components/Layout/Layout'
 import { Dashboard } from '@/pages/Dashboard'
 import { EstablishmentList } from '@/pages/EstablishmentList'
 import { GMapSearch } from '@/pages/GMapSearch'
-import { useNavigate } from 'react-router-dom'
 
-function AppRoutes({ establishments, onSave, onDelete }: {
+function AppRoutes({
+  establishments,
+  onSave,
+  onDelete,
+}: {
   establishments: Establishment[]
   onSave: (data: Establishment) => void
   onDelete: (id: string) => void
@@ -17,8 +20,14 @@ function AppRoutes({ establishments, onSave, onDelete }: {
 
   return (
     <Routes>
-      <Route path="/" element={<Dashboard establishments={establishments} onNavigate={() => navigate('/etablissements')} />} />
-      <Route path="/etablissements" element={<EstablishmentList establishments={establishments} onSave={onSave} onDelete={onDelete} />} />
+      <Route
+        path="/"
+        element={<Dashboard establishments={establishments} onNavigate={() => navigate('/etablissements')} />}
+      />
+      <Route
+        path="/etablissements"
+        element={<EstablishmentList establishments={establishments} onSave={onSave} onDelete={onDelete} />}
+      />
       <Route path="/recherche" element={<GMapSearch />} />
     </Routes>
   )
@@ -46,15 +55,18 @@ export default function App() {
 
   if (!isLoaded) {
     return (
-      <div className="flex h-screen items-center justify-center bg-gray-50 dark:bg-gray-950">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent" />
+      <div className="flex h-screen items-center justify-center" style={{ backgroundColor: 'var(--color-bg)' }}>
+        <div className="flex flex-col items-center gap-3">
+          <div className="h-6 w-6 animate-spin rounded-full border-2 border-[var(--color-text)] border-t-transparent" />
+          <span className="text-xs text-[var(--color-text-tertiary)]">Chargement...</span>
+        </div>
       </div>
     )
   }
 
   return (
     <BrowserRouter>
-      <Layout theme={theme} onThemeToggle={toggleTheme}>
+      <Layout theme={theme} onThemeToggle={toggleTheme} total={establishments.length}>
         <AppRoutes establishments={establishments} onSave={handleSave} onDelete={handleDelete} />
       </Layout>
     </BrowserRouter>

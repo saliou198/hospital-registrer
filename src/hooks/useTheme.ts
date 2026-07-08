@@ -7,7 +7,6 @@ export function useTheme() {
     if (typeof window !== 'undefined') {
       const saved = window.localStorage.getItem('theme')
       if (saved === 'dark' || saved === 'light') return saved
-      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
     }
     return 'light'
   })

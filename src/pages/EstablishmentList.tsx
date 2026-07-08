@@ -1,11 +1,14 @@
-import { useState, useMemo, useRef } from 'react'
+import { useState, useMemo, useRef, useEffect } from 'react'
+import { useSearchParams } from 'react-router-dom'
+import { Search } from 'lucide-react'
 import type { Establishment, EstablishmentType, ProgressionStatus } from '@/types'
 import { useToast } from '@/hooks/useToast'
 import { exportToJSON, importFromJSON } from '@/utils'
-import { SearchBar } from '@/components/UI/SearchBar'
 import { Pagination } from '@/components/UI/Pagination'
 import { Modal } from '@/components/UI/Modal'
 import { ToastContainer } from '@/components/UI/Toast'
+import { EmptyState } from '@/components/UI/EmptyState'
+import { TableSkeleton } from '@/components/UI/Skeleton'
 import { EstablishmentTable } from '@/components/Establishment/EstablishmentTable'
 import { EstablishmentForm } from '@/components/Establishment/EstablishmentForm'
 import { EstablishmentFilters } from '@/components/Establishment/EstablishmentFilters'
@@ -22,8 +25,10 @@ const ITEMS_PER_PAGE = 10
 export function EstablishmentList({ establishments, onSave, onDelete }: EstablishmentListProps) {
   const { toasts, addToast, removeToast } = useToast()
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const [searchParams, setSearchParams] = useSearchParams()
+  const [isLoading, setIsLoading] = useState(true)
 
-  const [search, setSearch] = useState('')
+  const search = searchParams.get('q') || ''
   const [statusFilter, setStatusFilter] = useState<ProgressionStatus | ''>('')
   const [typeFilter, setTypeFilter] = useState<EstablishmentType | ''>('')
   const [regionFilter, setRegionFilter] = useState('')
@@ -32,6 +37,11 @@ export function EstablishmentList({ establishments, onSave, onDelete }: Establis
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingEstablishment, setEditingEstablishment] = useState<Establishment | null>(null)
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null)
+
+  useEffect(() => {
+    const timer = setTimeout(() => setIsLoading(false), 400)
+    return () => clearTimeout(timer)
+  }, [])
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase()
@@ -52,6 +62,8 @@ export function EstablishmentList({ establishments, onSave, onDelete }: Establis
   const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE))
   const paginated = filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
 
+  useEffect(() => { setCurrentPage(1) }, [search, statusFilter, typeFilter, regionFilter])
+
   const handleOpenAdd = () => {
     setEditingEstablishment(null)
     setIsModalOpen(true)
@@ -66,7 +78,12 @@ export function EstablishmentList({ establishments, onSave, onDelete }: Establis
     onSave(data)
     setIsModalOpen(false)
     setEditingEstablishment(null)
-    addToast(data.id && establishments.find((e) => e.id === data.id) ? 'Établissement modifié avec succès' : 'Établissement ajouté avec succès', 'success')
+    addToast(
+      establishments.find((e) => e.id === data.id)
+        ? 'Établissement modifié'
+        : 'Établissement ajouté',
+      'success',
+    )
   }
 
   const handleDeleteConfirm = () => {
@@ -99,74 +116,90 @@ export function EstablishmentList({ establishments, onSave, onDelete }: Establis
     setStatusFilter('')
     setTypeFilter('')
     setRegionFilter('')
-    setSearch('')
+    setSearchParams({})
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Établissements</h1>
-        <div className="flex flex-wrap items-center gap-2">
+    <div className="space-y-5 animate-fade-in">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-[var(--color-text)]">Établissements</h1>
+          <p className="mt-0.5 text-sm text-[var(--color-text-tertiary)]">
+            {filtered.length} résultat{filtered.length !== 1 ? 's' : ''}
+            {filtered.length !== establishments.length && ` (sur ${establishments.length})`}
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
           <button
             onClick={handleExport}
-            className="flex items-center gap-2 rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700"
+            className="flex h-8 items-center gap-1.5 rounded-lg border border-[var(--color-border)] px-3 text-xs font-medium text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-secondary)] transition-colors"
           >
-            <Download size={16} />
+            <Download size={13} />
             Exporter
           </button>
           <button
             onClick={() => fileInputRef.current?.click()}
-            className="flex items-center gap-2 rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700"
+            className="flex h-8 items-center gap-1.5 rounded-lg border border-[var(--color-border)] px-3 text-xs font-medium text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-secondary)] transition-colors"
           >
-            <Upload size={16} />
+            <Upload size={13} />
             Importer
           </button>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".json"
-            onChange={handleImport}
-            className="hidden"
-          />
+          <input ref={fileInputRef} type="file" accept=".json" onChange={handleImport} className="hidden" />
           <button
             onClick={handleOpenAdd}
-            className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+            className="flex h-8 items-center gap-1.5 rounded-lg bg-[var(--color-text)] px-3 text-xs font-medium text-[var(--color-bg)] hover:opacity-90 transition-opacity"
           >
-            <Plus size={18} />
+            <Plus size={14} />
             Ajouter
           </button>
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center gap-4">
-        <div className="w-full sm:w-72">
-          <SearchBar
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="relative flex-1 min-w-[200px] max-w-sm">
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)]" />
+          <input
+            type="text"
             value={search}
-            onChange={setSearch}
-            placeholder="Nom, ville, région, responsable..."
+            onChange={(e) => {
+              setSearchParams(e.target.value ? { q: e.target.value } : {})
+            }}
+            placeholder="Rechercher par nom, ville, région..."
+            className="w-full rounded-lg border border-[var(--color-border)] bg-transparent py-1.5 pl-9 pr-3 text-sm text-[var(--color-text)] placeholder-[var(--color-text-tertiary)] outline-none transition-colors focus:border-emerald-500"
           />
         </div>
         <EstablishmentFilters
           statusFilter={statusFilter}
           typeFilter={typeFilter}
           regionFilter={regionFilter}
-          onStatusChange={(v) => { setStatusFilter(v); setCurrentPage(1) }}
-          onTypeChange={(v) => { setTypeFilter(v); setCurrentPage(1) }}
-          onRegionChange={(v) => { setRegionFilter(v); setCurrentPage(1) }}
+          onStatusChange={(v) => setStatusFilter(v)}
+          onTypeChange={(v) => setTypeFilter(v)}
+          onRegionChange={(v) => setRegionFilter(v)}
           onClear={clearFilters}
         />
       </div>
 
-      <div className="text-sm text-gray-500 dark:text-gray-400">
-        {filtered.length} résultat{filtered.length !== 1 ? 's' : ''}
-        {filtered.length !== establishments.length && ` (sur ${establishments.length})`}
-      </div>
-
-      <EstablishmentTable
-        establishments={paginated}
-        onEdit={handleOpenEdit}
-        onDelete={(id) => setDeleteConfirmId(id)}
-      />
+      {isLoading ? (
+        <TableSkeleton />
+      ) : paginated.length === 0 ? (
+        <EmptyState
+          action={
+            <button
+              onClick={handleOpenAdd}
+              className="flex items-center gap-1.5 rounded-lg bg-[var(--color-text)] px-3 py-1.5 text-xs font-medium text-[var(--color-bg)] hover:opacity-90 transition-opacity"
+            >
+              <Plus size={13} />
+              Ajouter
+            </button>
+          }
+        />
+      ) : (
+        <EstablishmentTable
+          establishments={paginated}
+          onEdit={handleOpenEdit}
+          onDelete={(id) => setDeleteConfirmId(id)}
+        />
+      )}
 
       <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
 
@@ -187,19 +220,19 @@ export function EstablishmentList({ establishments, onSave, onDelete }: Establis
         onClose={() => setDeleteConfirmId(null)}
         title="Confirmer la suppression"
       >
-        <p className="mb-6 text-gray-600 dark:text-gray-400">
+        <p className="mb-6 text-sm text-[var(--color-text-secondary)]">
           Êtes-vous sûr de vouloir supprimer cet établissement ? Cette action est irréversible.
         </p>
         <div className="flex justify-end gap-3">
           <button
             onClick={() => setDeleteConfirmId(null)}
-            className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700"
+            className="rounded-lg px-4 py-2 text-sm font-medium text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-secondary)] transition-colors"
           >
             Annuler
           </button>
           <button
             onClick={handleDeleteConfirm}
-            className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
+            className="rounded-lg bg-red-500 px-4 py-2 text-sm font-medium text-white hover:bg-red-600 transition-colors"
           >
             Supprimer
           </button>

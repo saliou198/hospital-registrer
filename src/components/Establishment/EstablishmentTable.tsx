@@ -10,6 +10,15 @@ interface EstablishmentTableProps {
   onDelete: (id: string) => void
 }
 
+const TYPE_ICONS: Record<string, string> = {
+  hospital: 'H',
+  clinic: 'C',
+  cabinet: 'M',
+  pharmacy: 'P',
+  laboratory: 'L',
+  other: '?',
+}
+
 export function EstablishmentTable({ establishments, onEdit, onDelete }: EstablishmentTableProps) {
   const [sortField, setSortField] = useState<SortField>('name')
   const [sortDir, setSortDir] = useState<SortDirection>('asc')
@@ -30,106 +39,96 @@ export function EstablishmentTable({ establishments, onEdit, onDelete }: Establi
   })
 
   const SortIcon = ({ field }: { field: SortField }) => {
-    if (sortField !== field) return <ArrowUpDown size={14} className="opacity-40" />
-    return sortDir === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />
-  }
-
-  const statusConfig = (status: Establishment['status']) =>
-    PROGRESSION_STATUSES.find((s) => s.value === status)
-
-  if (establishments.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center py-16 text-gray-400 dark:text-gray-500">
-        <p className="text-lg font-medium">Aucun établissement trouvé</p>
-        <p className="mt-1 text-sm">Ajoutez un établissement ou modifiez vos filtres.</p>
-      </div>
-    )
+    if (sortField !== field) return <ArrowUpDown size={12} className="opacity-30" />
+    return sortDir === 'asc' ? <ArrowUp size={12} /> : <ArrowDown size={12} />
   }
 
   return (
-    <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
+    <div className="overflow-x-auto rounded-xl border border-[var(--color-border)]">
       <table className="w-full text-left text-sm">
         <thead>
-          <tr className="border-b border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800/50">
+          <tr className="border-b border-[var(--color-border)] bg-[var(--color-bg-secondary)]/50">
             {[
-              { field: 'name' as SortField, label: 'Nom' },
+              { field: 'name' as SortField, label: 'Établissement' },
               { field: 'type' as SortField, label: 'Type' },
               { field: 'region' as SortField, label: 'Région' },
               { field: 'city' as SortField, label: 'Ville' },
-              { label: 'Adresse' },
-              { label: 'Téléphone' },
-              { label: 'Responsable' },
-              { field: 'visitDate' as SortField, label: 'Visite' },
+              { label: 'Contact' },
               { field: 'status' as SortField, label: 'Statut' },
               { label: 'Commentaires' },
-              { label: 'Actions' },
+              { label: '' },
             ].map((col) => (
               <th
                 key={col.label}
-                className={`whitespace-nowrap px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 ${col.field ? 'cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200' : ''}`}
+                className={`sticky top-0 z-10 whitespace-nowrap px-4 py-3 text-xs font-medium uppercase tracking-wider text-[var(--color-text-tertiary)] bg-[var(--color-bg-secondary)]/50 backdrop-blur-sm ${col.field ? 'cursor-pointer select-none hover:text-[var(--color-text-secondary)]' : ''}`}
                 onClick={() => col.field && handleSort(col.field)}
               >
                 <div className="flex items-center gap-1">
-                  {col.label}
                   {col.field && <SortIcon field={col.field} />}
+                  {col.label}
                 </div>
               </th>
             ))}
           </tr>
         </thead>
-        <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+        <tbody className="divide-y divide-[var(--color-border)]">
           {sorted.map((est) => {
-            const sc = statusConfig(est.status)
+            const sc = PROGRESSION_STATUSES.find((s) => s.value === est.status)
             return (
-              <tr key={est.id} className="bg-white transition-colors hover:bg-gray-50 dark:bg-gray-900 dark:hover:bg-gray-800/50">
-                <td className="whitespace-nowrap px-4 py-3 font-medium text-gray-900 dark:text-white">
-                  {est.name}
+              <tr
+                key={est.id}
+                className="group bg-[var(--color-surface)] transition-all duration-150 hover:bg-[var(--color-bg-secondary)]/30"
+              >
+                <td className="px-4 py-3.5">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] text-xs font-bold text-[var(--color-text-tertiary)]">
+                      {TYPE_ICONS[est.type] || '?'}
+                    </div>
+                    <div>
+                      <p className="font-medium text-[var(--color-text)]">{est.name}</p>
+                      <p className="text-xs text-[var(--color-text-tertiary)]">{est.address}</p>
+                    </div>
+                  </div>
                 </td>
-                <td className="whitespace-nowrap px-4 py-3 text-gray-600 dark:text-gray-400">
-                  {getTypeLabel(est.type)}
+                <td className="px-4 py-3.5 text-xs text-[var(--color-text-secondary)]">{getTypeLabel(est.type)}</td>
+                <td className="px-4 py-3.5 text-xs text-[var(--color-text-secondary)]">{est.region}</td>
+                <td className="px-4 py-3.5 text-xs text-[var(--color-text-secondary)]">{est.city}</td>
+                <td className="px-4 py-3.5">
+                  <div className="text-xs text-[var(--color-text)]">{est.phone}</div>
+                  <div className="text-xs text-[var(--color-text-tertiary)]">{est.contactPerson}</div>
                 </td>
-                <td className="whitespace-nowrap px-4 py-3 text-gray-600 dark:text-gray-400">{est.region}</td>
-                <td className="whitespace-nowrap px-4 py-3 text-gray-600 dark:text-gray-400">{est.city}</td>
-                <td className="max-w-[200px] truncate px-4 py-3 text-gray-600 dark:text-gray-400" title={est.address}>
-                  {est.address}
-                </td>
-                <td className="whitespace-nowrap px-4 py-3 text-gray-600 dark:text-gray-400">{est.phone}</td>
-                <td className="whitespace-nowrap px-4 py-3 text-gray-600 dark:text-gray-400">{est.contactPerson}</td>
-                <td className="whitespace-nowrap px-4 py-3 text-gray-600 dark:text-gray-400">{est.visitDate}</td>
-                <td className="whitespace-nowrap px-4 py-3">
+                <td className="px-4 py-3.5">
                   {sc && (
-                    <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${sc.color}`}>
+                    <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ${sc.color}`}>
+                      <span className={`h-1.5 w-1.5 rounded-full ${sc.dot}`} />
                       {sc.label}
                     </span>
                   )}
                 </td>
-                <td className="max-w-[200px] truncate px-4 py-3 text-gray-600 dark:text-gray-400" title={est.comments}>
-                  {est.comments}
+                <td className="max-w-[160px] truncate px-4 py-3.5 text-xs text-[var(--color-text-tertiary)]" title={est.comments}>
+                  {est.comments || '—'}
                 </td>
-                <td className="whitespace-nowrap px-4 py-3">
-                  <div className="flex items-center gap-1">
+                <td className="px-4 py-3.5">
+                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                     <a
                       href={getGoogleMapsUrl(est)}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="rounded-lg p-1.5 text-gray-400 hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-900/30 dark:hover:text-blue-400"
-                      title="Voir sur Google Maps"
+                      className="flex h-7 w-7 items-center justify-center rounded-lg text-[var(--color-text-tertiary)] hover:bg-emerald-50 hover:text-emerald-600 transition-colors"
                     >
-                      <MapPin size={16} />
+                      <MapPin size={13} />
                     </a>
                     <button
                       onClick={() => onEdit(est)}
-                      className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-700 dark:hover:text-gray-300"
-                      title="Modifier"
+                      className="flex h-7 w-7 items-center justify-center rounded-lg text-[var(--color-text-tertiary)] hover:bg-[var(--color-bg-secondary)] hover:text-[var(--color-text)] transition-colors"
                     >
-                      <Pencil size={16} />
+                      <Pencil size={13} />
                     </button>
                     <button
                       onClick={() => onDelete(est.id)}
-                      className="rounded-lg p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/30 dark:hover:text-red-400"
-                      title="Supprimer"
+                      className="flex h-7 w-7 items-center justify-center rounded-lg text-[var(--color-text-tertiary)] hover:bg-red-50 hover:text-red-500 transition-colors"
                     >
-                      <Trash2 size={16} />
+                      <Trash2 size={13} />
                     </button>
                   </div>
                 </td>

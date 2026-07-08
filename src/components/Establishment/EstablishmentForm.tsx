@@ -43,90 +43,150 @@ export function EstablishmentForm({ establishment, onSave, onCancel }: Establish
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault()
     const now = new Date().toISOString()
-    const data: Establishment = {
+    onSave({
       id: establishment?.id ?? generateId(),
       ...form,
       createdAt: establishment?.createdAt ?? now,
       updatedAt: now,
-    }
-    onSave(data)
+    })
   }
 
-  const fields: { name: keyof typeof form; label: string; type: string; required?: boolean }[] = [
-    { name: 'name', label: 'Nom de l\'établissement', type: 'text', required: true },
-    { name: 'city', label: 'Ville', type: 'text', required: true },
-    { name: 'address', label: 'Adresse', type: 'text' },
-    { name: 'phone', label: 'Téléphone', type: 'tel' },
-    { name: 'contactPerson', label: 'Responsable rencontré', type: 'text' },
-    { name: 'visitDate', label: 'Date de visite', type: 'date' },
-  ]
+  const update = (field: string, value: string) => setForm((prev) => ({ ...prev, [field]: value }))
+
+  const inputClass = "peer w-full rounded-lg border border-[var(--color-border)] bg-transparent px-3 pt-5 pb-1.5 text-sm text-[var(--color-text)] outline-none transition-colors focus:border-emerald-500"
+  const labelClass = "absolute left-3 top-1/2 -translate-y-1/2 text-xs text-[var(--color-text-tertiary)] transition-all duration-200 peer-focus:top-2 peer-focus:text-[10px] peer-focus:text-emerald-500 peer-[.filled]:top-2 peer-[.filled]:text-[10px]"
+  const selectClass = "peer w-full rounded-lg border border-[var(--color-border)] bg-transparent px-3 pt-5 pb-1.5 text-sm text-[var(--color-text)] outline-none transition-colors focus:border-emerald-500 appearance-none cursor-pointer"
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-5">
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        {fields.map((f) => (
-          <div key={f.name} className={f.name === 'name' || f.name === 'address' ? 'sm:col-span-2' : ''}>
-            <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
-              {f.label}
-            </label>
-            <input
-              type={f.type}
-              value={form[f.name] as string}
-              onChange={(e) => setForm((prev) => ({ ...prev, [f.name]: e.target.value }))}
-              required={f.required ?? false}
-              className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-            />
-          </div>
-        ))}
+        <div className="relative sm:col-span-2">
+          <input
+            id="name"
+            type="text"
+            value={form.name}
+            onChange={(e) => update('name', e.target.value)}
+            required
+            className={`${inputClass} ${form.name ? 'filled' : ''}`}
+            placeholder=" "
+          />
+          <label htmlFor="name" className={labelClass}>Nom de l'établissement</label>
+        </div>
 
-        <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Type</label>
+        <div className="relative">
           <select
+            id="type"
             value={form.type}
-            onChange={(e) => setForm((prev) => ({ ...prev, type: e.target.value as EstablishmentType }))}
-            className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+            onChange={(e) => update('type', e.target.value)}
+            className={selectClass}
           >
             {ESTABLISHMENT_TYPES.map((t) => (
               <option key={t.value} value={t.value}>{t.label}</option>
             ))}
           </select>
+          <label htmlFor="type" className={labelClass}>Type</label>
         </div>
 
-        <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Région</label>
+        <div className="relative">
           <select
+            id="region"
             value={form.region}
-            onChange={(e) => setForm((prev) => ({ ...prev, region: e.target.value }))}
-            className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+            onChange={(e) => update('region', e.target.value)}
+            className={selectClass}
           >
-            <option value="">Sélectionner une région</option>
+            <option value="" disabled></option>
             {REGIONS.map((r) => (
               <option key={r} value={r}>{r}</option>
             ))}
           </select>
+          <label htmlFor="region" className={labelClass}>Région</label>
         </div>
 
-        <div className="sm:col-span-2">
-          <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Statut de progression</label>
+        <div className="relative">
+          <input
+            id="city"
+            type="text"
+            value={form.city}
+            onChange={(e) => update('city', e.target.value)}
+            required
+            className={`${inputClass} ${form.city ? 'filled' : ''}`}
+            placeholder=" "
+          />
+          <label htmlFor="city" className={labelClass}>Ville</label>
+        </div>
+
+        <div className="relative">
+          <input
+            id="address"
+            type="text"
+            value={form.address}
+            onChange={(e) => update('address', e.target.value)}
+            className={`${inputClass} ${form.address ? 'filled' : ''}`}
+            placeholder=" "
+          />
+          <label htmlFor="address" className={labelClass}>Adresse</label>
+        </div>
+
+        <div className="relative">
+          <input
+            id="phone"
+            type="tel"
+            value={form.phone}
+            onChange={(e) => update('phone', e.target.value)}
+            className={`${inputClass} ${form.phone ? 'filled' : ''}`}
+            placeholder=" "
+          />
+          <label htmlFor="phone" className={labelClass}>Téléphone</label>
+        </div>
+
+        <div className="relative">
+          <input
+            id="contactPerson"
+            type="text"
+            value={form.contactPerson}
+            onChange={(e) => update('contactPerson', e.target.value)}
+            className={`${inputClass} ${form.contactPerson ? 'filled' : ''}`}
+            placeholder=" "
+          />
+          <label htmlFor="contactPerson" className={labelClass}>Responsable rencontré</label>
+        </div>
+
+        <div className="relative">
+          <input
+            id="visitDate"
+            type="date"
+            value={form.visitDate}
+            onChange={(e) => update('visitDate', e.target.value)}
+            className={`${inputClass} ${form.visitDate ? 'filled' : ''}`}
+            placeholder=" "
+          />
+          <label htmlFor="visitDate" className={labelClass}>Date de visite</label>
+        </div>
+
+        <div className="relative sm:col-span-2">
           <select
+            id="status"
             value={form.status}
-            onChange={(e) => setForm((prev) => ({ ...prev, status: e.target.value as ProgressionStatus }))}
-            className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+            onChange={(e) => update('status', e.target.value)}
+            className={selectClass}
           >
             {PROGRESSION_STATUSES.map((s) => (
               <option key={s.value} value={s.value}>{s.label}</option>
             ))}
           </select>
+          <label htmlFor="status" className={labelClass}>Statut de progression</label>
         </div>
 
-        <div className="sm:col-span-2">
-          <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Commentaires</label>
+        <div className="relative sm:col-span-2">
           <textarea
+            id="comments"
             value={form.comments}
-            onChange={(e) => setForm((prev) => ({ ...prev, comments: e.target.value }))}
+            onChange={(e) => update('comments', e.target.value)}
             rows={3}
-            className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+            className={`${inputClass} resize-none ${form.comments ? 'filled' : ''}`}
+            placeholder=" "
           />
+          <label htmlFor="comments" className={labelClass}>Commentaires</label>
         </div>
       </div>
 
@@ -134,13 +194,13 @@ export function EstablishmentForm({ establishment, onSave, onCancel }: Establish
         <button
           type="button"
           onClick={onCancel}
-          className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700"
+          className="rounded-lg px-4 py-2 text-sm font-medium text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-secondary)] transition-colors"
         >
           Annuler
         </button>
         <button
           type="submit"
-          className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+          className="rounded-lg bg-[var(--color-text)] px-4 py-2 text-sm font-medium text-[var(--color-bg)] hover:opacity-90 transition-opacity"
         >
           {establishment ? 'Modifier' : 'Ajouter'}
         </button>

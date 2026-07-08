@@ -5,22 +5,24 @@ import { Navbar } from './Navbar'
 interface LayoutProps {
   theme: 'light' | 'dark'
   onThemeToggle: () => void
+  total?: number
   children: ReactNode
 }
 
-export function Layout({ theme, onThemeToggle, children }: LayoutProps) {
+export function Layout({ theme, onThemeToggle, total, children }: LayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   return (
-    <div className="flex h-screen overflow-hidden bg-gray-50 dark:bg-gray-950">
+    <div className="flex min-h-screen" style={{ backgroundColor: 'var(--color-bg)' }}>
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-      <div className="flex flex-1 flex-col overflow-hidden">
+      <div className="flex flex-1 flex-col">
         <Navbar
           onMenuToggle={() => setSidebarOpen((prev) => !prev)}
           theme={theme}
           onThemeToggle={onThemeToggle}
+          total={total}
         />
-        <main className="flex-1 overflow-y-auto p-6">
+        <main className="flex-1 p-6 animate-fade-in">
           {children}
         </main>
       </div>

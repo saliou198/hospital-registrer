@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom'
-import { LayoutDashboard, Building2, Search, X } from 'lucide-react'
+import { Building2, LayoutDashboard, Search, X } from 'lucide-react'
 
 interface SidebarProps {
   isOpen: boolean
@@ -9,30 +9,30 @@ interface SidebarProps {
 const links = [
   { to: '/', icon: LayoutDashboard, label: 'Tableau de bord' },
   { to: '/etablissements', icon: Building2, label: 'Établissements' },
-  { to: '/recherche', icon: Search, label: 'Recherche' },
+  { to: '/recherche', icon: Search, label: 'Recherche Maps' },
 ]
 
 export function Sidebar({ isOpen, onClose }: SidebarProps) {
   return (
     <>
-      {isOpen && (
-        <div className="fixed inset-0 z-30 bg-black/50 lg:hidden" onClick={onClose} />
-      )}
+      {isOpen && <div className="fixed inset-0 z-30 bg-black/20 backdrop-blur-sm lg:hidden" onClick={onClose} />}
       <aside
-        className={`fixed left-0 top-0 z-40 flex h-full w-64 flex-col border-r border-gray-200 bg-white transition-transform dark:border-gray-700 dark:bg-gray-900 lg:static lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-40 flex w-56 flex-col border-r border-[var(--color-border)] bg-[var(--color-surface)] transition-transform duration-300 lg:static lg:translate-x-0 ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
-        <div className="flex h-16 items-center justify-between border-b border-gray-200 px-5 dark:border-gray-700">
-          <div className="flex items-center gap-2">
-            <Building2 className="text-blue-600" size={22} />
-            <span className="text-lg font-bold text-gray-900 dark:text-white">HealthTrack</span>
+        <div className="flex h-14 items-center justify-between border-b border-[var(--color-border)] px-5">
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[var(--color-text)]">
+              <Building2 size={14} className="text-[var(--color-bg)]" />
+            </div>
+            <span className="text-sm font-semibold tracking-tight text-[var(--color-text)]">HealthTrack</span>
           </div>
-          <button onClick={onClose} className="rounded-lg p-1 text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 lg:hidden">
-            <X size={20} />
+          <button onClick={onClose} className="rounded-lg p-1.5 text-[var(--color-text-tertiary)] hover:bg-[var(--color-bg-secondary)] lg:hidden">
+            <X size={15} />
           </button>
         </div>
-        <nav className="flex-1 space-y-1 p-4">
+        <nav className="flex-1 space-y-0.5 p-3">
           {links.map((link) => (
             <NavLink
               key={link.to}
@@ -40,20 +40,27 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
               end={link.to === '/'}
               onClick={onClose}
               className={({ isActive }) =>
-                `flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+                `group relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-150 ${
                   isActive
-                    ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/50 dark:text-blue-200'
-                    : 'text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800'
+                    ? 'text-[var(--color-text)]'
+                    : 'text-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-secondary)]'
                 }`
               }
             >
-              <link.icon size={18} />
-              {link.label}
+              {({ isActive }) => (
+                <>
+                  {isActive && (
+                    <span className="absolute left-0 top-1/2 h-4 w-0.5 -translate-y-1/2 rounded-full bg-emerald-500" />
+                  )}
+                  <link.icon size={15} className={isActive ? 'text-emerald-500' : ''} />
+                  {link.label}
+                </>
+              )}
             </NavLink>
           ))}
         </nav>
-        <div className="border-t border-gray-200 p-4 dark:border-gray-700">
-          <p className="text-xs text-gray-400 dark:text-gray-500">HealthTrack v1.0</p>
+        <div className="border-t border-[var(--color-border)] p-4">
+          <p className="text-xs text-[var(--color-text-tertiary)]">HealthTrack v1.0</p>
         </div>
       </aside>
     </>

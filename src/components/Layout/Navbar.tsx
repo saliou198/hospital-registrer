@@ -1,31 +1,33 @@
-import { Menu, Moon, Sun, Building2 } from 'lucide-react'
+import { Menu, Moon, Sun } from 'lucide-react'
 
 interface NavbarProps {
   onMenuToggle: () => void
   theme: 'light' | 'dark'
   onThemeToggle: () => void
+  total?: number
 }
 
-export function Navbar({ onMenuToggle, theme, onThemeToggle }: NavbarProps) {
+export function Navbar({ onMenuToggle, theme, onThemeToggle, total }: NavbarProps) {
   return (
-    <header className="sticky top-0 z-20 flex h-16 items-center gap-4 border-b border-gray-200 bg-white/80 px-4 backdrop-blur-sm dark:border-gray-700 dark:bg-gray-900/80">
+    <header className="flex h-14 items-center gap-3 border-b border-[var(--color-border)] bg-[var(--color-surface)] px-6">
       <button
         onClick={onMenuToggle}
-        className="rounded-lg p-2 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 lg:hidden"
+        className="flex h-7 w-7 items-center justify-center rounded-lg text-[var(--color-text-tertiary)] hover:bg-[var(--color-bg-secondary)] lg:hidden"
       >
-        <Menu size={20} />
+        <Menu size={15} />
       </button>
-      <div className="flex items-center gap-2 lg:hidden">
-        <Building2 className="text-blue-600" size={20} />
-        <span className="text-base font-bold text-gray-900 dark:text-white">HealthTrack</span>
-      </div>
+      {total !== undefined && (
+        <span className="text-xs text-[var(--color-text-tertiary)]">
+          {total} établissement{total !== 1 ? 's' : ''}
+        </span>
+      )}
       <div className="flex-1" />
       <button
         onClick={onThemeToggle}
-        className="rounded-lg p-2 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"
+        className="flex h-7 w-7 items-center justify-center rounded-lg text-[var(--color-text-tertiary)] hover:bg-[var(--color-bg-secondary)] transition-colors"
         title={theme === 'dark' ? 'Mode clair' : 'Mode sombre'}
       >
-        {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+        {theme === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
       </button>
     </header>
   )
